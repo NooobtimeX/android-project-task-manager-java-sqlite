@@ -1,5 +1,6 @@
 package com.example.taskmanager;
 
+import android.app.Dialog;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -11,6 +12,8 @@ import android.widget.Spinner;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -19,37 +22,24 @@ public class MainActivity extends AppCompatActivity {
     private TaskAdapter taskAdapter;
     private ArrayList<Task> taskList;
 
-    private EditText editTaskTitle;
-    private Button addTaskButton;
     private Spinner filterSpinner;
+    private ListView taskListView;
+    private FloatingActionButton createTaskButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        editTaskTitle = findViewById(R.id.editTaskTitle);
-        addTaskButton = findViewById(R.id.addTaskButton);
         filterSpinner = findViewById(R.id.filterSpinner);
-        ListView taskListView = findViewById(R.id.taskListView);
+        taskListView = findViewById(R.id.taskListView);
+        createTaskButton = findViewById(R.id.createTaskButton);
 
         dbHelper = new TaskDatabaseHelper(this);
         taskList = dbHelper.getAllTasks();
         taskAdapter = new TaskAdapter(this, taskList);
 
         taskListView.setAdapter(taskAdapter);
-
-        // Add a new task
-        addTaskButton.setOnClickListener(v -> {
-            String taskTitle = editTaskTitle.getText().toString().trim();
-            if (!taskTitle.isEmpty()) {
-                Task task = new Task(taskTitle, false);
-                dbHelper.addTask(task);
-                taskList.add(task);
-                taskAdapter.notifyDataSetChanged();
-                editTaskTitle.setText("");
-            }
-        });
 
         // Setup filter spinner
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
@@ -70,7 +60,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Toggle completion on click
+        // Floating button to create a task
+        createTaskButton.setOnClickListener(v -> showCreateTaskDialog());
+
+        // Toggle task completion on click
         taskListView.setOnItemClickListener((parent, view, position, id) -> {
             Task task = taskList.get(position);
             task.setCompleted(!task.isCompleted());
@@ -86,6 +79,30 @@ public class MainActivity extends AppCompatActivity {
             taskAdapter.notifyDataSetChanged();
             return true;
         });
+    }
+
+    private void showCreateTaskDialog() {
+        Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.dialog_create_task);
+
+        EditText editTaskTitle = dialog.findViewById(R.id.editDialogTaskTitle);
+        Button createButton = dialog.findViewById(R.id.dialogCreateButton);
+        Button closeButton = dialog.findViewById(R.id.dialogCloseButton);
+
+        createButton.setOnClickListener(v -> {
+            String taskTitle = editTaskTitle.getText().toString().trim();
+            if (!taskTitle.isEmpty()) {
+                Task task = new Task(taskTitle, false);
+                dbHelper.addTask(task);
+                taskList.add(task);
+                taskAdapter.notifyDataSetChanged();
+                dialog.dismiss();
+            }
+        });
+
+        closeButton.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
     }
 
     private void filterTasks(int filterType) {
