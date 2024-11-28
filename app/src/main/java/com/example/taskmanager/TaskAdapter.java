@@ -1,13 +1,14 @@
 package com.example.taskmanager;
 
+import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
@@ -52,6 +53,7 @@ public class TaskAdapter extends BaseAdapter {
         TextView taskTitle = convertView.findViewById(R.id.taskTitle);
         CheckBox taskCompleted = convertView.findViewById(R.id.taskCompleted);
         Button deleteTaskButton = convertView.findViewById(R.id.deleteTaskButton);
+        Button editTaskButton = convertView.findViewById(R.id.editTaskButton);
 
         taskTitle.setText(task.getTitle());
         taskCompleted.setChecked(task.isCompleted());
@@ -62,7 +64,7 @@ public class TaskAdapter extends BaseAdapter {
             dbHelper.updateTask(task);
         });
 
-        // Show confirmation dialog before deleting the task
+        // Delete task
         deleteTaskButton.setOnClickListener(v -> {
             new AlertDialog.Builder(context)
                     .setTitle("Delete Task")
@@ -76,6 +78,38 @@ public class TaskAdapter extends BaseAdapter {
                     .show();
         });
 
+        // Edit task
+        editTaskButton.setOnClickListener(v -> showEditTaskDialog(task, position));
+
         return convertView;
+    }
+
+    private void showEditTaskDialog(Task task, int position) {
+        Dialog dialog = new Dialog(context);
+        dialog.setContentView(R.layout.dialog_edit_task);
+
+        EditText editTaskTitle = dialog.findViewById(R.id.editDialogTaskTitle);
+        Button saveButton = dialog.findViewById(R.id.dialogEditSaveButton);
+        Button cancelButton = dialog.findViewById(R.id.dialogEditCancelButton);
+
+        // Pre-fill the task title
+        editTaskTitle.setText(task.getTitle());
+
+        // Save changes
+        saveButton.setOnClickListener(v -> {
+            String updatedTitle = editTaskTitle.getText().toString().trim();
+            if (!updatedTitle.isEmpty()) {
+                task.setTitle(updatedTitle);
+                dbHelper.updateTask(task);
+                taskList.set(position, task);
+                notifyDataSetChanged();
+                dialog.dismiss();
+            }
+        });
+
+        // Cancel editing
+        cancelButton.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
     }
 }

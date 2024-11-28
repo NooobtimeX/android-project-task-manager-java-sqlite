@@ -68,15 +68,14 @@ public class MainActivity extends AppCompatActivity {
             Task task = taskList.get(position);
             task.setCompleted(!task.isCompleted());
             dbHelper.updateTask(task);
-            taskAdapter.notifyDataSetChanged();
+            refreshTaskList(); // Refresh after toggling completion
         });
 
         // Long click to delete task
         taskListView.setOnItemLongClickListener((parent, view, position, id) -> {
             Task task = taskList.get(position);
             dbHelper.deleteTask(task.getId());
-            taskList.remove(position);
-            taskAdapter.notifyDataSetChanged();
+            refreshTaskList(); // Refresh after deletion
             return true;
         });
     }
@@ -94,8 +93,7 @@ public class MainActivity extends AppCompatActivity {
             if (!taskTitle.isEmpty()) {
                 Task task = new Task(taskTitle, false);
                 dbHelper.addTask(task);
-                taskList.add(task);
-                taskAdapter.notifyDataSetChanged();
+                refreshTaskList(); // Refresh after adding a new task
                 dialog.dismiss();
             }
         });
@@ -120,6 +118,12 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
 
+        taskAdapter.notifyDataSetChanged();
+    }
+
+    public void refreshTaskList() {
+        taskList.clear();
+        taskList.addAll(dbHelper.getAllTasks());
         taskAdapter.notifyDataSetChanged();
     }
 }
