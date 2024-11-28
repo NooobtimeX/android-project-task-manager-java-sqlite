@@ -1,43 +1,67 @@
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal"
-    android:padding="16dp"
+    android:padding="12dp"
     android:background="@drawable/rounded_task_card"
-    android:gravity="center_vertical">
+    android:gravity="center_vertical"
+    android:elevation="4dp">
 
     <CheckBox
         android:id="@+id/taskCompleted"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:buttonTint="#007AFF"
-        android:contentDescription="Mark task as completed" />
+        android:buttonTint="@color/primary"
+        android:contentDescription="@string/mark_task_as_completed" />
 
-    <TextView
-        android:id="@+id/taskTitle"
+    <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:layout_marginStart="8dp"
-        android:textSize="16sp"
-        android:textColor="#333333"
-        android:textStyle="bold" />
+        android:orientation="vertical"
+        android:layout_marginStart="8dp">
 
-    <Button
+        <TextView
+            android:id="@+id/taskTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textColor="@color/primary_dark"
+            android:textStyle="bold"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:maxLines="1" />
+
+        <TextView
+            android:id="@+id/taskDueDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textColor="@color/secondary_text"
+            android:layout_marginTop="2dp" />
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/editTaskButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Edit"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        app:icon="@drawable/ic_edit"
+        app:iconTint="@color/white"
+        app:backgroundTint="@color/primary"
+        app:iconPadding="0dp"
         android:layout_marginEnd="8dp"
-        android:background="@drawable/rounded_button"
-        android:textColor="#FFFFFF" />
+        android:contentDescription="@string/edit_task"
+        android:gravity="center" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/deleteTaskButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Delete"
-        android:background="@drawable/rounded_delete_button"
-        android:textColor="#FFFFFF" />
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        app:icon="@drawable/ic_delete"
+        app:iconTint="@color/white"
+        app:backgroundTint="@color/error"
+        app:iconPadding="0dp"
+        android:contentDescription="@string/delete_task"
+        android:gravity="center" />
 </LinearLayout>

@@ -7,6 +7,7 @@
     android:padding="16dp"
     android:background="#FFFFFF">
 
+    <!-- Task Title Input -->
     <EditText
         android:id="@+id/editDialogTaskTitle"
         android:layout_width="match_parent"
@@ -18,6 +19,25 @@
         android:textColorHint="#AAAAAA"
         android:inputType="text" />
 
+    <!-- Due Date Picker -->
+    <TextView
+        android:id="@+id/editDialogDueDateLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Select Due Date"
+        android:textSize="16sp"
+        android:textColor="#666666" />
+
+    <DatePicker
+        android:id="@+id/editDialogDueDatePicker"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:calendarViewShown="true"
+        android:spinnersShown="false"
+        android:layout_marginTop="8dp" />
+
+    <!-- Action Buttons -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

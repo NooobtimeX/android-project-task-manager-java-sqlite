@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.DatePicker;
 
 import androidx.appcompat.app.AlertDialog;
 
@@ -51,11 +52,14 @@ public class TaskAdapter extends BaseAdapter {
         Task task = taskList.get(position);
 
         TextView taskTitle = convertView.findViewById(R.id.taskTitle);
+        TextView taskDueDate = convertView.findViewById(R.id.taskDueDate); // Due date TextView
         CheckBox taskCompleted = convertView.findViewById(R.id.taskCompleted);
         Button deleteTaskButton = convertView.findViewById(R.id.deleteTaskButton);
         Button editTaskButton = convertView.findViewById(R.id.editTaskButton);
 
+        // Set task title and due date
         taskTitle.setText(task.getTitle());
+        taskDueDate.setText("Due: " + task.getDueDate());
         taskCompleted.setChecked(task.isCompleted());
 
         // Toggle task completion
@@ -89,25 +93,36 @@ public class TaskAdapter extends BaseAdapter {
         dialog.setContentView(R.layout.dialog_edit_task);
 
         EditText editTaskTitle = dialog.findViewById(R.id.editDialogTaskTitle);
+        DatePicker dueDatePicker = dialog.findViewById(R.id.editDialogDueDatePicker);
         Button saveButton = dialog.findViewById(R.id.dialogEditSaveButton);
         Button cancelButton = dialog.findViewById(R.id.dialogEditCancelButton);
 
-        // Pre-fill the task title
+        // Pre-fill task details
         editTaskTitle.setText(task.getTitle());
+        String[] dateParts = task.getDueDate().split("-");
+        int year = Integer.parseInt(dateParts[0]);
+        int month = Integer.parseInt(dateParts[1]) - 1; // Months are 0-based
+        int day = Integer.parseInt(dateParts[2]);
+        dueDatePicker.updateDate(year, month, day);
 
-        // Save changes
+        // Save button logic
         saveButton.setOnClickListener(v -> {
             String updatedTitle = editTaskTitle.getText().toString().trim();
+            int updatedDay = dueDatePicker.getDayOfMonth();
+            int updatedMonth = dueDatePicker.getMonth() + 1; // Convert back to 1-based
+            int updatedYear = dueDatePicker.getYear();
+            String updatedDueDate = updatedYear + "-" + updatedMonth + "-" + updatedDay;
+
             if (!updatedTitle.isEmpty()) {
                 task.setTitle(updatedTitle);
+                task.setDueDate(updatedDueDate);
                 dbHelper.updateTask(task);
-                taskList.set(position, task);
-                notifyDataSetChanged();
+                ((MainActivity) context).refreshTaskList();
                 dialog.dismiss();
             }
         });
 
-        // Cancel editing
+        // Cancel button logic
         cancelButton.setOnClickListener(v -> dialog.dismiss());
 
         dialog.show();

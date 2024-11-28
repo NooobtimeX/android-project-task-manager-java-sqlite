@@ -23,10 +23,11 @@ public class TaskDatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String CREATE_TASKS_TABLE = "CREATE TABLE " + TABLE_TASKS + "("
-                + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + COLUMN_TITLE + " TEXT,"
-                + COLUMN_COMPLETED + " INTEGER DEFAULT 0)";
+        String CREATE_TASKS_TABLE = "CREATE TABLE tasks ("
+                + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + "title TEXT,"
+                + "completed INTEGER DEFAULT 0,"
+                + "due_date TEXT)"; // Add due_date column
         db.execSQL(CREATE_TASKS_TABLE);
     }
 
@@ -39,23 +40,25 @@ public class TaskDatabaseHelper extends SQLiteOpenHelper {
     public void addTask(Task task) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put(COLUMN_TITLE, task.getTitle());
-        values.put(COLUMN_COMPLETED, task.isCompleted() ? 1 : 0);
-        db.insert(TABLE_TASKS, null, values);
+        values.put("title", task.getTitle());
+        values.put("completed", task.isCompleted() ? 1 : 0);
+        values.put("due_date", task.getDueDate()); // Include due date
+        db.insert("tasks", null, values);
         db.close();
     }
 
     public ArrayList<Task> getAllTasks() {
         ArrayList<Task> tasks = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_TASKS, null);
+        Cursor cursor = db.rawQuery("SELECT * FROM tasks", null);
 
         if (cursor.moveToFirst()) {
             do {
                 int id = cursor.getInt(0);
                 String title = cursor.getString(1);
                 boolean completed = cursor.getInt(2) == 1;
-                tasks.add(new Task(id, title, completed));
+                String dueDate = cursor.getString(3); // Get due date
+                tasks.add(new Task(id, title, completed, dueDate));
             } while (cursor.moveToNext());
         }
         cursor.close();
@@ -66,9 +69,10 @@ public class TaskDatabaseHelper extends SQLiteOpenHelper {
     public void updateTask(Task task) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put(COLUMN_TITLE, task.getTitle());
-        values.put(COLUMN_COMPLETED, task.isCompleted() ? 1 : 0);
-        db.update(TABLE_TASKS, values, COLUMN_ID + "=?", new String[]{String.valueOf(task.getId())});
+        values.put("title", task.getTitle());
+        values.put("completed", task.isCompleted() ? 1 : 0);
+        values.put("due_date", task.getDueDate()); // Update due date
+        db.update("tasks", values, "id=?", new String[]{String.valueOf(task.getId())});
         db.close();
     }
 
@@ -77,18 +81,22 @@ public class TaskDatabaseHelper extends SQLiteOpenHelper {
         db.delete(TABLE_TASKS, COLUMN_ID + "=?", new String[]{String.valueOf(taskId)});
         db.close();
     }
+
     public ArrayList<Task> getFilteredTasks(boolean completed) {
         ArrayList<Task> tasks = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_TASKS + " WHERE " + COLUMN_COMPLETED + "=?",
-                new String[]{completed ? "1" : "0"});
+        Cursor cursor = db.rawQuery(
+                "SELECT * FROM " + TABLE_TASKS + " WHERE " + COLUMN_COMPLETED + "=?",
+                new String[]{completed ? "1" : "0"}
+        );
 
         if (cursor.moveToFirst()) {
             do {
                 int id = cursor.getInt(0);
                 String title = cursor.getString(1);
                 boolean isCompleted = cursor.getInt(2) == 1;
-                tasks.add(new Task(id, title, isCompleted));
+                String dueDate = cursor.getString(3); // Include dueDate
+                tasks.add(new Task(id, title, isCompleted, dueDate));
             } while (cursor.moveToNext());
         }
         cursor.close();

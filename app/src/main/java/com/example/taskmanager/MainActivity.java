@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
@@ -85,15 +86,21 @@ public class MainActivity extends AppCompatActivity {
         dialog.setContentView(R.layout.dialog_create_task);
 
         EditText editTaskTitle = dialog.findViewById(R.id.editDialogTaskTitle);
+        DatePicker datePicker = dialog.findViewById(R.id.datePicker);
         Button createButton = dialog.findViewById(R.id.dialogCreateButton);
         Button closeButton = dialog.findViewById(R.id.dialogCloseButton);
 
         createButton.setOnClickListener(v -> {
             String taskTitle = editTaskTitle.getText().toString().trim();
             if (!taskTitle.isEmpty()) {
-                Task task = new Task(taskTitle, false);
+                int day = datePicker.getDayOfMonth();
+                int month = datePicker.getMonth() + 1; // Months are 0-based
+                int year = datePicker.getYear();
+                String dueDate = year + "-" + month + "-" + day;
+
+                Task task = new Task(taskTitle, false, dueDate);
                 dbHelper.addTask(task);
-                refreshTaskList(); // Refresh after adding a new task
+                refreshTaskList();
                 dialog.dismiss();
             }
         });

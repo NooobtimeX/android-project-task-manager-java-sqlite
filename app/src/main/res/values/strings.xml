@@ -6,6 +6,9 @@
     <string name="enter_task_title">Enter task title</string>
     <string name="create">Create</string>
     <string name="close">Close</string>
+    <string name="edit_task">Edit task</string>
+    <string name="delete_task">Delete task</string>
+    <string name="mark_task_as_completed">Mark task as completed</string>
     <string-array name="filter_options">
         <item>All Tasks</item>
         <item>Completed</item>
