@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">taskmanager</string>
+    <string name="enter_a_new_task">Enter a new task</string>
+    <string name="add_task">Add Task</string>
+    <string name="delete">Delete</string>
+    <string-array name="filter_options">
+        <item>All Tasks</item>
+        <item>Completed</item>
+        <item>Incomplete</item>
+    </string-array>
+</resources>

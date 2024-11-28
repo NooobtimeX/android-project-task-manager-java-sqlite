@@ -1,0 +1,68 @@
+# Gradle files
+.gradle/
+build/
+!gradle-wrapper.jar
+.gradle-cache/
+
+# Local configuration file (sdk path, etc.)
+local.properties
+
+# Log files
+*.log
+
+# Android Studio generated files
+.idea/
+*.iml
+
+# Keystore files
+*.keystore
+*.jks
+
+# Compiled files
+*.class
+*.dex
+*.apk
+*.aar
+*.jar
+
+# Generated files
+gen/
+bin/
+out/
+
+# Testing files
+.buildpath
+.project
+.cproject
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# ProGuard
+proguard/
+
+# kapt
+kapt_generated/
+
+# Miscellaneous
+.DS_Store
+*.swp
+*~
+*.tmp
+*.bak
+*.orig
+*.rej
+*.sublime-project
+*.sublime-workspace
+
+# macOS specific
+*.DS_Store
+
+# Windows specific
+Thumbs.db
+desktop.ini
+
+# Linux specific
+*~ 
+
+# End of file
