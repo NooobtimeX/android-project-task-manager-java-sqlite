@@ -5,19 +5,11 @@
     android:layout_height="match_parent"
     android:background="#F8F8F8">
 
-    <Spinner
-        android:id="@+id/filterSpinner"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:padding="12dp"
-        android:background="@drawable/rounded_spinner" />
-
     <ListView
         android:id="@+id/taskListView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/filterSpinner"
+        android:layout_marginTop="16dp"
         android:divider="@null"
         android:dividerHeight="10dp"
         android:background="#FFFFFF"

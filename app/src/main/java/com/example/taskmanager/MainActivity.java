@@ -2,14 +2,10 @@ package com.example.taskmanager;
 
 import android.app.Dialog;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Spinner;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -22,8 +18,6 @@ public class MainActivity extends AppCompatActivity {
     private TaskDatabaseHelper dbHelper;
     private TaskAdapter taskAdapter;
     private ArrayList<Task> taskList;
-
-    private Spinner filterSpinner;
     private ListView taskListView;
     private FloatingActionButton createTaskButton;
 
@@ -32,34 +26,17 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        filterSpinner = findViewById(R.id.filterSpinner);
+        // Initialize UI components
         taskListView = findViewById(R.id.taskListView);
         createTaskButton = findViewById(R.id.createTaskButton);
 
+        // Initialize database helper and load grouped tasks
         dbHelper = new TaskDatabaseHelper(this);
-        taskList = dbHelper.getAllTasks();
+        taskList = dbHelper.getTasksGroupedByCompletion();
+
+        // Set up the adapter
         taskAdapter = new TaskAdapter(this, taskList);
-
         taskListView.setAdapter(taskAdapter);
-
-        // Setup filter spinner
-        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
-                this, android.R.layout.simple_spinner_item,
-                new String[]{"All Tasks", "Completed", "Incomplete"});
-        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        filterSpinner.setAdapter(spinnerAdapter);
-
-        filterSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                filterTasks(position);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                // Do nothing
-            }
-        });
 
         // Floating button to create a task
         createTaskButton.setOnClickListener(v -> showCreateTaskDialog());
@@ -67,18 +44,33 @@ public class MainActivity extends AppCompatActivity {
         // Toggle task completion on click
         taskListView.setOnItemClickListener((parent, view, position, id) -> {
             Task task = taskList.get(position);
+
+            // Skip if the item is a header
+            if (task.getId() == -1) return;
+
+            // Toggle completion and update the database
             task.setCompleted(!task.isCompleted());
             dbHelper.updateTask(task);
-            refreshTaskList(); // Refresh after toggling completion
+            refreshTaskList();
         });
 
         // Long click to delete task
         taskListView.setOnItemLongClickListener((parent, view, position, id) -> {
             Task task = taskList.get(position);
+
+            // Skip if the item is a header
+            if (task.getId() == -1) return true;
+
+            // Delete the task and refresh the list
             dbHelper.deleteTask(task.getId());
-            refreshTaskList(); // Refresh after deletion
+            refreshTaskList();
             return true;
         });
+    }
+
+    public void updateTask(Task task) {
+        dbHelper.updateTask(task);
+        refreshTaskList(); // Optionally refresh the list after updating
     }
 
     private void showCreateTaskDialog() {
@@ -98,6 +90,7 @@ public class MainActivity extends AppCompatActivity {
                 int year = datePicker.getYear();
                 String dueDate = year + "-" + month + "-" + day;
 
+                // Add new task and refresh
                 Task task = new Task(taskTitle, false, dueDate);
                 dbHelper.addTask(task);
                 refreshTaskList();
@@ -106,31 +99,12 @@ public class MainActivity extends AppCompatActivity {
         });
 
         closeButton.setOnClickListener(v -> dialog.dismiss());
-
         dialog.show();
-    }
-
-    private void filterTasks(int filterType) {
-        taskList.clear();
-
-        switch (filterType) {
-            case 0: // All Tasks
-                taskList.addAll(dbHelper.getAllTasks());
-                break;
-            case 1: // Completed Tasks
-                taskList.addAll(dbHelper.getFilteredTasks(true));
-                break;
-            case 2: // Incomplete Tasks
-                taskList.addAll(dbHelper.getFilteredTasks(false));
-                break;
-        }
-
-        taskAdapter.notifyDataSetChanged();
     }
 
     public void refreshTaskList() {
         taskList.clear();
-        taskList.addAll(dbHelper.getAllTasks());
+        taskList.addAll(dbHelper.getTasksGroupedByCompletion());
         taskAdapter.notifyDataSetChanged();
     }
 }
