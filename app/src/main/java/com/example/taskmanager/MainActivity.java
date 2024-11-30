@@ -2,22 +2,29 @@ package com.example.taskmanager;
 
 import android.app.Dialog;
 import android.os.Bundle;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Spinner;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class MainActivity extends AppCompatActivity {
 
     private TaskDatabaseHelper dbHelper;
     private TaskAdapter taskAdapter;
     private ArrayList<Task> taskList;
+
+    private Spinner sortSpinner;
     private ListView taskListView;
     private FloatingActionButton createTaskButton;
 
@@ -27,10 +34,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // Initialize UI components
+        sortSpinner = findViewById(R.id.sortSpinner);
         taskListView = findViewById(R.id.taskListView);
         createTaskButton = findViewById(R.id.createTaskButton);
 
-        // Initialize database helper and load grouped tasks
+        // Initialize database helper and task list
         dbHelper = new TaskDatabaseHelper(this);
         taskList = dbHelper.getTasksGroupedByCompletion();
 
@@ -40,6 +48,30 @@ public class MainActivity extends AppCompatActivity {
 
         // Floating button to create a task
         createTaskButton.setOnClickListener(v -> showCreateTaskDialog());
+
+        // Sort options for the Spinner
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
+                this, android.R.layout.simple_spinner_item,
+                new String[]{"Sort by Due Date (Ascending)", "Sort by Due Date (Descending)"});
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        sortSpinner.setAdapter(spinnerAdapter);
+
+        // Handle sort selection
+        sortSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, android.view.View view, int position, long id) {
+                if (position == 0) {
+                    sortTasksByDueDate(true); // Ascending
+                } else {
+                    sortTasksByDueDate(false); // Descending
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Do nothing
+            }
+        });
 
         // Toggle task completion on click
         taskListView.setOnItemClickListener((parent, view, position, id) -> {
@@ -66,11 +98,6 @@ public class MainActivity extends AppCompatActivity {
             refreshTaskList();
             return true;
         });
-    }
-
-    public void updateTask(Task task) {
-        dbHelper.updateTask(task);
-        refreshTaskList(); // Optionally refresh the list after updating
     }
 
     private void showCreateTaskDialog() {
@@ -102,9 +129,50 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    public void refreshTaskList() {
+    private void refreshTaskList() {
         taskList.clear();
         taskList.addAll(dbHelper.getTasksGroupedByCompletion());
         taskAdapter.notifyDataSetChanged();
+    }
+
+    private void sortTasksByDueDate(boolean ascending) {
+        refreshTaskList(); // Get a fresh list with headers
+
+        // Separate tasks into completed and incomplete groups
+        ArrayList<Task> incompleteTasks = new ArrayList<>();
+        ArrayList<Task> completedTasks = new ArrayList<>();
+        for (Task task : taskList) {
+            if (task.getId() == -1) continue; // Skip headers
+            if (task.isCompleted()) {
+                completedTasks.add(task);
+            } else {
+                incompleteTasks.add(task);
+            }
+        }
+
+        // Sort each group by due date
+        Comparator<Task> dateComparator = (t1, t2) -> {
+            if (ascending) {
+                return t1.getDueDate().compareTo(t2.getDueDate());
+            } else {
+                return t2.getDueDate().compareTo(t1.getDueDate());
+            }
+        };
+        Collections.sort(incompleteTasks, dateComparator);
+        Collections.sort(completedTasks, dateComparator);
+
+        // Rebuild the task list with headers
+        taskList.clear();
+        taskList.add(new Task(-1, "Incomplete", false, ""));
+        taskList.addAll(incompleteTasks);
+        taskList.add(new Task(-1, "Completed", true, ""));
+        taskList.addAll(completedTasks);
+
+        taskAdapter.notifyDataSetChanged();
+    }
+
+    public void updateTask(Task task) {
+        dbHelper.updateTask(task); // Update the task in the database
+        refreshTaskList();         // Refresh the list after updating
     }
 }
