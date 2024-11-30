@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
@@ -14,6 +15,8 @@ public class TaskAdapter extends BaseAdapter {
 
     private Context context;
     private ArrayList<Task> taskList;
+    private boolean isIncompleteVisible = true; // Default visibility
+    private boolean isCompletedVisible = true; // Default visibility
 
     public TaskAdapter(Context context, ArrayList<Task> taskList) {
         this.context = context;
@@ -46,32 +49,50 @@ public class TaskAdapter extends BaseAdapter {
         Task task = taskList.get(position);
 
         if (getItemViewType(position) == 0) {
-            // Header
+            // Header View
             convertView = LayoutInflater.from(context).inflate(R.layout.task_header, parent, false);
             TextView headerTitle = convertView.findViewById(R.id.headerTitle);
+            Button toggleButton = convertView.findViewById(R.id.toggleButton);
+
             headerTitle.setText(task.getTitle());
+            if (task.getTitle().equals("Incomplete")) {
+                toggleButton.setText(isIncompleteVisible ? "Hide" : "Show");
+                toggleButton.setOnClickListener(v -> {
+                    isIncompleteVisible = !isIncompleteVisible;
+                    notifyDataSetChanged(); // Refresh the list
+                });
+            } else if (task.getTitle().equals("Completed")) {
+                toggleButton.setText(isCompletedVisible ? "Hide" : "Show");
+                toggleButton.setOnClickListener(v -> {
+                    isCompletedVisible = !isCompletedVisible;
+                    notifyDataSetChanged(); // Refresh the list
+                });
+            }
         } else {
-            // Task item
-            convertView = LayoutInflater.from(context).inflate(R.layout.task_item, parent, false);
+            // Task Item View
+            if ((task.isCompleted() && !isCompletedVisible) || (!task.isCompleted() && !isIncompleteVisible)) {
+                convertView = new View(context); // Empty view when hidden
+                convertView.setLayoutParams(new ViewGroup.LayoutParams(0, 0));
+            } else {
+                convertView = LayoutInflater.from(context).inflate(R.layout.task_item, parent, false);
 
-            CheckBox taskCompleted = convertView.findViewById(R.id.taskCompleted);
-            TextView taskTitle = convertView.findViewById(R.id.taskTitle);
-            TextView taskDueDate = convertView.findViewById(R.id.taskDueDate);
+                CheckBox taskCompleted = convertView.findViewById(R.id.taskCompleted);
+                TextView taskTitle = convertView.findViewById(R.id.taskTitle);
+                TextView taskDueDate = convertView.findViewById(R.id.taskDueDate);
 
-            taskTitle.setText(task.getTitle());
-            taskDueDate.setText(task.getDueDate());
-            taskCompleted.setChecked(task.isCompleted());
+                taskTitle.setText(task.getTitle());
+                taskDueDate.setText(task.getDueDate());
+                taskCompleted.setChecked(task.isCompleted());
 
-            // Handle task completion toggle
-            taskCompleted.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                task.setCompleted(isChecked);
-
-                // Update task using MainActivity's public method
-                if (context instanceof MainActivity) {
-                    ((MainActivity) context).updateTask(task);
-                }
-            });
+                taskCompleted.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                    task.setCompleted(isChecked);
+                    if (context instanceof MainActivity) {
+                        ((MainActivity) context).updateTask(task);
+                    }
+                });
+            }
         }
+
         return convertView;
     }
 }
