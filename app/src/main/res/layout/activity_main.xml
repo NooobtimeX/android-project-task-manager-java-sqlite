@@ -5,19 +5,21 @@
     android:layout_height="match_parent"
     android:background="#F8F8F8">
 
+    <!-- Sorting Spinner -->
     <Spinner
-        android:id="@+id/filterSpinner"
+        android:id="@+id/sortSpinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:padding="12dp"
         android:background="@drawable/rounded_spinner" />
 
+    <!-- Task List -->
     <ListView
         android:id="@+id/taskListView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/filterSpinner"
+        android:layout_below="@id/sortSpinner"
         android:divider="@null"
         android:dividerHeight="10dp"
         android:background="#FFFFFF"
@@ -25,6 +27,7 @@
         android:padding="8dp"
         android:clipToPadding="false" />
 
+    <!-- Floating Action Button -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/createTaskButton"
         android:layout_width="wrap_content"

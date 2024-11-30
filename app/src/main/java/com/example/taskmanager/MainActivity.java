@@ -2,7 +2,6 @@ package com.example.taskmanager;
 
 import android.app.Dialog;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -16,6 +15,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -23,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
     private TaskAdapter taskAdapter;
     private ArrayList<Task> taskList;
 
-    private Spinner filterSpinner;
+    private Spinner sortSpinner;
     private ListView taskListView;
     private FloatingActionButton createTaskButton;
 
@@ -32,27 +33,38 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        filterSpinner = findViewById(R.id.filterSpinner);
+        // Initialize UI components
+        sortSpinner = findViewById(R.id.sortSpinner);
         taskListView = findViewById(R.id.taskListView);
         createTaskButton = findViewById(R.id.createTaskButton);
 
+        // Initialize database helper and task list
         dbHelper = new TaskDatabaseHelper(this);
-        taskList = dbHelper.getAllTasks();
-        taskAdapter = new TaskAdapter(this, taskList);
+        taskList = dbHelper.getTasksGroupedByCompletion();
 
+        // Set up the adapter
+        taskAdapter = new TaskAdapter(this, taskList);
         taskListView.setAdapter(taskAdapter);
 
-        // Setup filter spinner
+        // Floating button to create a task
+        createTaskButton.setOnClickListener(v -> showCreateTaskDialog());
+
+        // Sort options for the Spinner
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
                 this, android.R.layout.simple_spinner_item,
-                new String[]{"All Tasks", "Completed", "Incomplete"});
+                new String[]{"Sort by Due Date (Ascending)", "Sort by Due Date (Descending)"});
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        filterSpinner.setAdapter(spinnerAdapter);
+        sortSpinner.setAdapter(spinnerAdapter);
 
-        filterSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        // Handle sort selection
+        sortSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                filterTasks(position);
+            public void onItemSelected(AdapterView<?> parent, android.view.View view, int position, long id) {
+                if (position == 0) {
+                    sortTasksByDueDate(true); // Ascending
+                } else {
+                    sortTasksByDueDate(false); // Descending
+                }
             }
 
             @Override
@@ -61,22 +73,29 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Floating button to create a task
-        createTaskButton.setOnClickListener(v -> showCreateTaskDialog());
-
         // Toggle task completion on click
         taskListView.setOnItemClickListener((parent, view, position, id) -> {
             Task task = taskList.get(position);
+
+            // Skip if the item is a header
+            if (task.getId() == -1) return;
+
+            // Toggle completion and update the database
             task.setCompleted(!task.isCompleted());
             dbHelper.updateTask(task);
-            refreshTaskList(); // Refresh after toggling completion
+            refreshTaskList();
         });
 
         // Long click to delete task
         taskListView.setOnItemLongClickListener((parent, view, position, id) -> {
             Task task = taskList.get(position);
+
+            // Skip if the item is a header
+            if (task.getId() == -1) return true;
+
+            // Delete the task and refresh the list
             dbHelper.deleteTask(task.getId());
-            refreshTaskList(); // Refresh after deletion
+            refreshTaskList();
             return true;
         });
     }
@@ -98,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
                 int year = datePicker.getYear();
                 String dueDate = year + "-" + month + "-" + day;
 
+                // Add new task and refresh
                 Task task = new Task(taskTitle, false, dueDate);
                 dbHelper.addTask(task);
                 refreshTaskList();
@@ -106,31 +126,53 @@ public class MainActivity extends AppCompatActivity {
         });
 
         closeButton.setOnClickListener(v -> dialog.dismiss());
-
         dialog.show();
     }
 
-    private void filterTasks(int filterType) {
+    private void refreshTaskList() {
         taskList.clear();
+        taskList.addAll(dbHelper.getTasksGroupedByCompletion());
+        taskAdapter.notifyDataSetChanged();
+    }
 
-        switch (filterType) {
-            case 0: // All Tasks
-                taskList.addAll(dbHelper.getAllTasks());
-                break;
-            case 1: // Completed Tasks
-                taskList.addAll(dbHelper.getFilteredTasks(true));
-                break;
-            case 2: // Incomplete Tasks
-                taskList.addAll(dbHelper.getFilteredTasks(false));
-                break;
+    private void sortTasksByDueDate(boolean ascending) {
+        refreshTaskList(); // Get a fresh list with headers
+
+        // Separate tasks into completed and incomplete groups
+        ArrayList<Task> incompleteTasks = new ArrayList<>();
+        ArrayList<Task> completedTasks = new ArrayList<>();
+        for (Task task : taskList) {
+            if (task.getId() == -1) continue; // Skip headers
+            if (task.isCompleted()) {
+                completedTasks.add(task);
+            } else {
+                incompleteTasks.add(task);
+            }
         }
+
+        // Sort each group by due date
+        Comparator<Task> dateComparator = (t1, t2) -> {
+            if (ascending) {
+                return t1.getDueDate().compareTo(t2.getDueDate());
+            } else {
+                return t2.getDueDate().compareTo(t1.getDueDate());
+            }
+        };
+        Collections.sort(incompleteTasks, dateComparator);
+        Collections.sort(completedTasks, dateComparator);
+
+        // Rebuild the task list with headers
+        taskList.clear();
+        taskList.add(new Task(-1, "Incomplete", false, ""));
+        taskList.addAll(incompleteTasks);
+        taskList.add(new Task(-1, "Completed", true, ""));
+        taskList.addAll(completedTasks);
 
         taskAdapter.notifyDataSetChanged();
     }
 
-    public void refreshTaskList() {
-        taskList.clear();
-        taskList.addAll(dbHelper.getAllTasks());
-        taskAdapter.notifyDataSetChanged();
+    public void updateTask(Task task) {
+        dbHelper.updateTask(task); // Update the task in the database
+        refreshTaskList();         // Refresh the list after updating
     }
 }

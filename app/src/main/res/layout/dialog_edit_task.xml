@@ -12,7 +12,7 @@
         android:id="@+id/editDialogTaskTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Edit task title"
+        android:hint="@string/edit_task_title"
         android:padding="12dp"
         android:background="@drawable/rounded_edittext"
         android:textColor="#333333"
@@ -25,7 +25,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Select Due Date"
+        android:text="@string/select_due_date"
         android:textSize="16sp"
         android:textColor="#666666" />
 
@@ -49,7 +49,7 @@
             android:id="@+id/dialogEditSaveButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Save"
+            android:text="@string/save"
             android:background="@drawable/rounded_button"
             android:textColor="#FFFFFF"
             android:padding="12dp" />
@@ -58,7 +58,7 @@
             android:id="@+id/dialogEditCancelButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Cancel"
+            android:text="@string/cancel"
             android:layout_marginStart="8dp"
             android:background="@drawable/rounded_delete_button"
             android:textColor="#FFFFFF"
