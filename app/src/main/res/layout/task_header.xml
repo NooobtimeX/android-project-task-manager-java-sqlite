@@ -12,6 +12,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
+        android:text="@string/header_title"
         android:textColor="#333333"
         android:textSize="18sp"
         android:textStyle="bold" />
@@ -20,7 +21,8 @@
         android:id="@+id/toggleButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hide"
+        android:text="@string/hide"
         android:background="?android:attr/selectableItemBackground"
+        android:textColor="#333333"
         android:textSize="14sp" />
 </LinearLayout>
