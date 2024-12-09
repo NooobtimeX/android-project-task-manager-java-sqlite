@@ -39,7 +39,7 @@
             android:layout_height="wrap_content"
             android:text="@string/create"
             android:background="@drawable/rounded_button"
-            android:textColor="#FFFFFF"
+            android:textColor="#000000"
             android:padding="12dp" />
 
         <Button
@@ -49,7 +49,7 @@
             android:text="@string/close"
             android:layout_marginStart="8dp"
             android:background="@drawable/rounded_delete_button"
-            android:textColor="#FFFFFF"
+            android:textColor="#000000"
             android:padding="12dp" />
     </LinearLayout>
 </LinearLayout>

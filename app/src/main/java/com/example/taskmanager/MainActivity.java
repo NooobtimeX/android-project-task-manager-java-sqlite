@@ -175,4 +175,40 @@ public class MainActivity extends AppCompatActivity {
         dbHelper.updateTask(task); // Update the task in the database
         refreshTaskList();         // Refresh the list after updating
     }
+    public void showEditTaskDialog(Task task) {
+        Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.dialog_create_task); // Reuse the same layout
+
+        EditText editTaskTitle = dialog.findViewById(R.id.editDialogTaskTitle);
+        DatePicker datePicker = dialog.findViewById(R.id.datePicker);
+        Button saveButton = dialog.findViewById(R.id.dialogCreateButton);
+        Button closeButton = dialog.findViewById(R.id.dialogCloseButton);
+
+        // Pre-fill existing task details
+        editTaskTitle.setText(task.getTitle());
+        String[] dateParts = task.getDueDate().split("-");
+        datePicker.updateDate(Integer.parseInt(dateParts[0]), Integer.parseInt(dateParts[1]) - 1, Integer.parseInt(dateParts[2]));
+
+        saveButton.setOnClickListener(v -> {
+            String updatedTitle = editTaskTitle.getText().toString().trim();
+            int day = datePicker.getDayOfMonth();
+            int month = datePicker.getMonth() + 1;
+            int year = datePicker.getYear();
+            String updatedDueDate = year + "-" + month + "-" + day;
+
+            if (!updatedTitle.isEmpty()) {
+                task.setTitle(updatedTitle);
+                task.setDueDate(updatedDueDate);
+                updateTask(task); // Update in the database and refresh list
+                dialog.dismiss();
+            }
+        });
+
+        closeButton.setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
+    }
+    public void deleteTask(Task task) {
+        dbHelper.deleteTask(task.getId());
+        refreshTaskList();
+    }
 }

@@ -79,15 +79,32 @@ public class TaskAdapter extends BaseAdapter {
                 CheckBox taskCompleted = convertView.findViewById(R.id.taskCompleted);
                 TextView taskTitle = convertView.findViewById(R.id.taskTitle);
                 TextView taskDueDate = convertView.findViewById(R.id.taskDueDate);
+                Button editTaskButton = convertView.findViewById(R.id.editTaskButton);
+                Button deleteTaskButton = convertView.findViewById(R.id.deleteTaskButton);
 
                 taskTitle.setText(task.getTitle());
                 taskDueDate.setText(task.getDueDate());
                 taskCompleted.setChecked(task.isCompleted());
 
+                // Update task completion
                 taskCompleted.setOnCheckedChangeListener((buttonView, isChecked) -> {
                     task.setCompleted(isChecked);
                     if (context instanceof MainActivity) {
                         ((MainActivity) context).updateTask(task);
+                    }
+                });
+
+                // Edit task
+                editTaskButton.setOnClickListener(v -> {
+                    if (context instanceof MainActivity) {
+                        ((MainActivity) context).showEditTaskDialog(task); // Implement in MainActivity
+                    }
+                });
+
+                // Delete task
+                deleteTaskButton.setOnClickListener(v -> {
+                    if (context instanceof MainActivity) {
+                        ((MainActivity) context).deleteTask(task); // Implement in MainActivity
                     }
                 });
             }

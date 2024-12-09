@@ -12,7 +12,9 @@
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:padding="12dp"
-        android:background="@drawable/rounded_spinner" />
+        android:textColor="#000000"
+        android:background="@drawable/rounded_spinner"
+        android:popupBackground="@color/white"/>
 
     <!-- Task List -->
     <ListView
